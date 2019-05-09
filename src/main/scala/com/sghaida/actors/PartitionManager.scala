@@ -60,7 +60,8 @@ class PartitionManager[A: ClassTag, B: ClassTag] extends Actor with ActorLogging
 
 
     case Status(storeName) => info.get(storeName) match {
-      case Some(status) => sender() ! Some(status)
+      case Some(status) =>
+        sender() ! Some(status)
       case None =>
         log.warning(s"[Status] $storeName: is not defined")
         sender() ! None
