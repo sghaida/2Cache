@@ -4,13 +4,13 @@ import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef, OneForOneStrategy, Props}
 import akka.pattern.ask
-import akka.actor.SupervisorStrategy.Resume
+import akka.actor.SupervisorStrategy.{Resume, Stop}
 import akka.util.Timeout
 
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import com.sghaida.models.messages.Manager.{Get, Initialize, PartitionInfo, Set, Status}
-import com.sghaida.exceptions.EngineException.StoreNotFoundException
+import com.sghaida.exceptions.EngineException.{PartitionNotFoundException, StoreNotFoundException}
 import com.sghaida.models.messages.Partition
 import com.sghaida.partitioners.Partitioner
 
@@ -30,9 +30,9 @@ class PartitionManager[A: ClassTag, B: ClassTag](implicit partitioner: Partition
   override val supervisorStrategy: OneForOneStrategy =
     OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 10 seconds) {
       case _: StoreNotFoundException => Resume
-      case _: Exception => Resume
+      case _: PartitionNotFoundException => Resume
+      case _: RuntimeException => Stop
     }
-
 
   def partitionActivities(info: Map[String, Map[Int, PartitionInfo]]): Receive = {
 
@@ -66,18 +66,17 @@ class PartitionManager[A: ClassTag, B: ClassTag](implicit partitioner: Partition
         context.become(partitionActivities(newStore))
     }
 
-
-    case Status(storeName) => info.get(storeName) match {
+    case Status(name) => info.get(name) match {
       case Some(status) =>
         sender() ! Some(status)
       case None =>
-        log.warning(s"[Status] $storeName: is not defined")
+        log.warning(s"[Status] $name: is not defined")
         sender() ! None
     }
 
-    case Set(storeName, key, value, update) =>
-      val store = info.get(storeName)
-      if (store.isEmpty) throw StoreNotFoundException(s"[Set] $storeName is not defined")
+    case Set(name, key, value, update) =>
+      val store = info.get(name)
+      if (store.isEmpty) throw StoreNotFoundException(s"[Set] $name is not defined")
 
       val partition = partitioner.HashPartitioner(key, store.get.keys.size)
       val partitionActor = store.get(partition).actorRef
@@ -85,9 +84,9 @@ class PartitionManager[A: ClassTag, B: ClassTag](implicit partitioner: Partition
 
       sender() ! saveResult
 
-    case Get(storeName, key) =>
-      val store = info.get(storeName)
-      if (store.isEmpty) throw StoreNotFoundException(s"[Set] $storeName is not defined")
+    case Get(name, key) =>
+      val store = info.get(name)
+      if (store.isEmpty) throw StoreNotFoundException(s"[Set] $name is not defined")
 
       val partition = partitioner.HashPartitioner(key, store.get.keys.size)
       val partitionActor = store.get(partition).actorRef

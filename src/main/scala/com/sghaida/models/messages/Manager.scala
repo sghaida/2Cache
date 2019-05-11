@@ -10,9 +10,6 @@ object Manager {
 
   case class Initialize(storeName: String, numberOfPartitions: Int)
   case class Status(storeName: String)
-  case class Balance(storeName: String)
-  case class Add(storeName: String, numberOfPartitions: Int)
-  case class Remove(storeName: String, partitionId: String)
   case class Set[A,B](storeName: String, key: A, value: B, update: Boolean = false)
   case class Get[A](storeName: String, key: A)
 
