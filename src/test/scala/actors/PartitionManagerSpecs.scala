@@ -12,9 +12,7 @@ import com.sghaida.exceptions.EngineException.StoreAlreadyDefinedException
 import com.sghaida.partitioners.SimplePartitioner
 import com.sghaida.models.messages.Manager._
 import com.sghaida.models.messages.Partition
-import com.sghaida.models.messages.Partition.{Done, StatusMessage}
 
-import scala.collection.immutable
 
 class PartitionManagerSpecs
   extends TestKit(ActorSystem("test-system"))
@@ -85,7 +83,7 @@ class PartitionManagerSpecs
         case result: Future[_] =>
           result onComplete{
             case Success(res) =>
-              res shouldBe a[StatusMessage]
+              res shouldBe a[Partition.StatusMessage]
               res shouldEqual Partition.Done
             case Failure(ex) => fail(ex)
           }
@@ -115,7 +113,7 @@ class PartitionManagerSpecs
         case result: Future[_] =>
           result onComplete{
             case Success(res) =>
-              res shouldBe a[StatusMessage]
+              res shouldBe a[Partition.StatusMessage]
               res shouldEqual Partition.Done
             case Failure(ex) => fail(ex)
           }
@@ -143,7 +141,24 @@ class PartitionManagerSpecs
           case result: Future[_] =>
             result onComplete{
               case Success(res) =>
-                res shouldBe a[StatusMessage]
+                res shouldBe a[Partition.StatusMessage]
+                res shouldEqual Partition.Done
+              case Failure(ex) => fail(ex)
+            }
+          case ex:Exception => fail(ex)
+        }
+
+      }
+    }
+
+    "parallel remove for many key" in {
+      (1 to 1000).par.foreach{key =>
+        probe.send(manager, Remove("test-store", s"$key"))
+        probe.expectMsgPF(){
+          case result: Future[_] =>
+            result onComplete{
+              case Success(res) =>
+                res shouldBe a[Partition.StatusMessage]
                 res shouldEqual Partition.Done
               case Failure(ex) => fail(ex)
             }
