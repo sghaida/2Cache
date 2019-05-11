@@ -1,7 +1,5 @@
 package com.sghaida.partitioners
 
-import com.sghaida.mixins.Partitioner
-
 import scala.reflect.ClassTag
 
 class SimplePartitioner extends Partitioner {

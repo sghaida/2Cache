@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
 import com.sghaida.models.messages.Manager.{Get, Initialize, PartitionInfo, Set, Status}
 import com.sghaida.exceptions.EngineException.StoreNotFoundException
 import com.sghaida.models.messages.Partition
-import com.sghaida.mixins.Partitioner
+import com.sghaida.partitioners.Partitioner
 
 object PartitionManager{
   def props[A: ClassTag, B: ClassTag](implicit p: Partitioner): Props = Props(new PartitionManager[A,B]())
