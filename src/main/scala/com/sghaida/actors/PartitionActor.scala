@@ -1,7 +1,7 @@
 package com.sghaida.actors
 
 import akka.actor.{Actor, ActorLogging, OneForOneStrategy, Props}
-import Models.Partition.{Delete, Dispose, Done, Failed, Get, Reset, Set}
+import com.sghaida.models.messages.Partition.{Delete, Dispose, Done, Failed, Get, Reset, Set}
 import akka.actor.SupervisorStrategy.Escalate
 
 import scala.concurrent.duration._

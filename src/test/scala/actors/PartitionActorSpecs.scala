@@ -9,7 +9,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import akka.util.Timeout
 
-import com.sghaida.actors.Models.Partition
+import com.sghaida.models.messages.Partition
 import com.sghaida.actors.PartitionActor
 
 class PartitionActorSpecs extends TestKit(ActorSystem("test-system"))
