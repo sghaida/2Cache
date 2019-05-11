@@ -46,7 +46,7 @@ class PartitionManager[A: ClassTag, B: ClassTag](implicit partitioner: Partition
         sender() ! None
 
       case _ => /* not store exist */
-        val partitionsInfo = for (i <- 1 to numOfParts) yield {
+        val partitionsInfo = for (i <- 0 until numOfParts) yield {
 
           /* generate uuid -> take the first 4 digits -> append to the store name */
           val id = s"$name-${UUID.randomUUID().toString.take(4)}"
