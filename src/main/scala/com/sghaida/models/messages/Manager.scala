@@ -12,5 +12,6 @@ object Manager {
   case class Status(storeName: String)
   case class Set[A,B](storeName: String, key: A, value: B, update: Boolean = false)
   case class Get[A](storeName: String, key: A)
+  case class Remove[A](storeName: String, Key: A)
 
 }

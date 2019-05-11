@@ -33,7 +33,7 @@ class PartitionActorSpecs extends TestKit(ActorSystem("test-system"))
     }
 
     "remove from partition" in {
-      parent.send(partition, Partition.Delete("1"))
+      parent.send(partition, Partition.Remove("1"))
       parent.expectMsg(Partition.Done)
 
     }

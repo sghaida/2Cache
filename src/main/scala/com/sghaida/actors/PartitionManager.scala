@@ -2,15 +2,15 @@ package com.sghaida.actors
 
 import java.util.UUID
 
-import akka.actor.{Actor, ActorLogging, ActorRef, OneForOneStrategy, Props}
+import akka.actor.{Actor, ActorLogging, OneForOneStrategy, Props}
 import akka.pattern.ask
 import akka.actor.SupervisorStrategy.{Resume, Stop}
 import akka.util.Timeout
 
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
-import com.sghaida.models.messages.Manager.{Get, Initialize, PartitionInfo, Set, Status}
-import com.sghaida.exceptions.EngineException.{PartitionNotFoundException, StoreNotFoundException}
+import com.sghaida.models.messages.Manager.{Get, Initialize, PartitionInfo, Remove, Set, Status}
+import com.sghaida.exceptions.EngineException.StoreNotFoundException
 import com.sghaida.models.messages.Partition
 import com.sghaida.partitioners.Partitioner
 
@@ -30,7 +30,6 @@ class PartitionManager[A: ClassTag, B: ClassTag](implicit partitioner: Partition
   override val supervisorStrategy: OneForOneStrategy =
     OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 10 seconds) {
       case _: StoreNotFoundException => Resume
-      case _: PartitionNotFoundException => Resume
       case _: RuntimeException => Stop
     }
 
@@ -76,7 +75,7 @@ class PartitionManager[A: ClassTag, B: ClassTag](implicit partitioner: Partition
 
     case Set(name, key, value, update) =>
       val store = info.get(name)
-      if (store.isEmpty) throw StoreNotFoundException(s"[Set] $name is not defined")
+      if (store.isEmpty) throw StoreNotFoundException(name)
 
       val partition = partitioner.HashPartitioner(key, store.get.keys.size)
       val partitionActor = store.get(partition).actorRef
@@ -86,7 +85,7 @@ class PartitionManager[A: ClassTag, B: ClassTag](implicit partitioner: Partition
 
     case Get(name, key) =>
       val store = info.get(name)
-      if (store.isEmpty) throw StoreNotFoundException(s"[Set] $name is not defined")
+      if (store.isEmpty) throw StoreNotFoundException(name)
 
       val partition = partitioner.HashPartitioner(key, store.get.keys.size)
       val partitionActor = store.get(partition).actorRef
@@ -94,6 +93,16 @@ class PartitionManager[A: ClassTag, B: ClassTag](implicit partitioner: Partition
       val getResult = partitionActor ? ( Partition Get(key=key))
 
       sender() ! getResult
+
+    case Remove(name, key) =>
+      val store = info.get(name)
+      if (store.isEmpty) throw StoreNotFoundException(name)
+
+      val partition = partitioner.HashPartitioner(key, store.get.keys.size)
+      val partitionActor = store.get(partition).actorRef
+      val deleteResult = partitionActor ? ( Partition Remove(key=key))
+      sender() ! deleteResult
+
   }
 
 

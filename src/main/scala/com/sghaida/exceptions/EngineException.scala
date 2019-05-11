@@ -5,7 +5,20 @@ trait EngineException extends Exception {
 }
 
 object EngineException {
-  case class StoreNotFoundException(msg: String) extends EngineException
-  case class StoreAlreadyDefinedException(msg: String) extends EngineException
-  case class PartitionNotFoundException(msg: String) extends EngineException
+
+  case class StoreNotFoundException(storeName: String) extends EngineException {
+    override val msg: String = s"store: $storeName was not found"
+  }
+
+  case class StoreAlreadyDefinedException(storeName: String) extends EngineException {
+    override val msg: String = s"store: $storeName is already defined"
+  }
+
+  case class PartitionNotFoundException(partitionName: String) extends EngineException {
+    override val msg: String = s"partition: $partitionName was not found"
+  }
+
+  case class KeyNotFoundException(key: String) extends EngineException {
+    override val msg: String = s"key: $key was not found"
+  }
 }

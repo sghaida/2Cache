@@ -109,6 +109,33 @@ class PartitionManagerSpecs
 
     }
 
+    "remove key/value from the store" in {
+      probe.send(manager, Remove("test-store", "test-key"))
+      probe.expectMsgPF(){
+        case result: Future[_] =>
+          result onComplete{
+            case Success(res) =>
+              res shouldBe a[StatusMessage]
+              res shouldEqual Partition.Done
+            case Failure(ex) => fail(ex)
+          }
+        case ex:Exception => fail(ex)
+      }
+
+      /* get the deleted key/value*/
+      probe.send(manager, Get("test-store", "test-key"))
+      probe.expectMsgPF(){
+        case result: Future[_] =>
+          result onComplete{
+            case Success(v) =>
+              v shouldBe a[Option[_]]
+              v.asInstanceOf[Option[_]] shouldBe None
+            case Failure(ex) => fail(ex)
+          }
+        case ex:Exception => fail(ex)
+      }
+    }
+
     "parallel insertion for many key/value" in {
       (1 to 1000).par.foreach{key =>
         probe.send(manager, Set("test-store", s"$key", s"${key+1}"))

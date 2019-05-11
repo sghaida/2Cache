@@ -9,5 +9,5 @@ object Partition {
   case object Failed extends PartitionRelated with StatusMessage
   case class Set[A,B](key: A, value: B, update: Boolean = false) extends PartitionRelated
   case class Get[A](key: A) extends PartitionRelated
-  case class Delete[A](key: A) extends PartitionRelated
+  case class Remove[A](key: A) extends PartitionRelated
 }
