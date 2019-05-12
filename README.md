@@ -9,7 +9,7 @@ the engine suppose to cover the following basic features then evolve from their
 3. ~~respond to store status request with number of entries per partition~~ 
 4. ~~add key/value to the store~~
 5. add multiple key/value
-6. remove key/value from the store
+6. ~~remove key/value from the store~~
 7. remove multiple key/value
 8. expire key/value after certain duration
 9. ~~update value for specific key~~
